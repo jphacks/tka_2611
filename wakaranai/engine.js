@@ -54,6 +54,53 @@ function reviewQuestions(skill){const bank={
  eliminate:[{type:'number',text:'x + y = 7、2x + y = 11。下の式から上の式を引いて求まる x は？',answer:4},{type:'number',text:'2x + y = 9、2x + 2y = 12。下の式から上の式を引いて求まる y は？',answer:3}],
  simultaneous:[{type:'pair',text:'x + y = 8\n2x + y = 13',answer:5,y:3},{type:'pair',text:'x + y = 6\n2x + y = 8',answer:2,y:4}]
  };return bank[skill].map(p=>({...p,skill}));}
+function recommendedReviews(skill){
+ const bank={
+ calc:[
+ ['3 − 7 を計算しよう。','−4','数直線で3から左へ7進みます。'],
+ ['−2 + 5 を計算しよう。','3','−2から右へ5進みます。'],
+ ['3 − (−2) を計算しよう。','5','負の数を引くことは、その反対の正の数を足すことです。'],
+ ['−5 − (−8) を計算しよう。','3','−5 + 8 に直します。'],
+ ['x + 7 = 3 を解こう。','x = −4','両辺から7を引くと、x = 3 − 7 = −4です。']],
+ expand:[
+ ['2(x + 3) を展開しよう。','2x + 6','2をxと3の両方にかけます。'],
+ ['3(x + 4) を展開しよう。','3x + 12','3 × x + 3 × 4です。'],
+ ['2(x − 5) を展開しよう。','2x − 10','−5にも2をかけます。'],
+ ['−3(x − 2) を展開しよう。','−3x + 6','−3 × (−2) は +6です。'],
+ ['2(x + 3) = 14 を、展開して解こう。','x = 4','2x + 6 = 14 → 2x = 8 → x = 4です。']],
+ equality:[
+ ['5 = 5 の両辺に3を足すと、どんな等式になる？','8 = 8','左右に同じ数を足すので、等しい関係が保たれます。'],
+ ['x + 7 = 12 の両辺から7を引いた式を書こう。','x = 5','左辺も右辺も7を引きます。'],
+ ['3x = 12 の両辺を3で割ってよい理由を説明しよう。','等しい値を同じ0でない数で割っても、等しい関係が保たれるから。','左右両方に同じ操作をする点を確認します。'],
+ ['a = b、c = d のとき、a − c = b − d といえる理由を説明しよう。','a − c = b − c であり、c = d より b − c = b − d だから。','等式の両辺から同じ値を引き、そのあと等しい値で置き換えます。'],
+ ['x + y = 7、2x + y = 11。下の式から上の式を左右それぞれ引き、xを求めよう。','x = 4','(2x + y) − (x + y) = 11 − 7。左右それぞれ等しい値どうしの差なので、等式が成り立ちます。']],
+ inverse:[
+ ['x + 4 = 9 を解こう。','x = 5','両辺から4を引きます。'],
+ ['x − 3 = 5 を解こう。','x = 8','両辺に3を足します。'],
+ ['x − 6 = −2 を解こう。','x = 4','両辺に6を足すと x = −2 + 6です。'],
+ ['−2x = 10 を解こう。','x = −5','両辺を−2で割ります。'],
+ ['3x + 4 = 19 を解こう。','x = 5','両辺から4を引き、次に3で割ります。']],
+ solve:[
+ ['2x = 8 を解こう。','x = 4','両辺を2で割ります。'],
+ ['2x + 3 = 11 を解こう。','x = 4','両辺から3を引き、2で割ります。'],
+ ['2(x + 3) = 14 を解こう。','x = 4','両辺を2で割ると x + 3 = 7です。'],
+ ['3(x − 2) = 9 を解こう。','x = 5','両辺を3で割り、2を足します。'],
+ ['3(x + 2) = x + 14 を解こう。','x = 4','3x + 6 = x + 14 → 2x = 8です。']],
+ eliminate:[
+ ['(2x + y) − (x + y) を簡単にしよう。','x','2x − x + y − y となり、yが消えます。'],
+ ['x + y = 7、2x + y = 11。下の式から上の式を引こう。','x = 4','両辺どうしを引くと x = 11 − 7です。'],
+ ['x + y = 5、x − y = 1。2つの式を足そう。','2x = 6','y + (−y) = 0なので、yが消えます。'],
+ ['x + y = 5、2x + 3y = 12。上の式を2倍してから、下の式との差でyを求めよう。','y = 2','上の式は2x + 2y = 10。下から引くと y = 2です。'],
+ ['x + y = 7、2x + y = 11 を解こう。','x = 4、y = 3','引いて x = 4。上の式に代入すると y = 3です。']],
+ simultaneous:[
+ ['x = 3 のとき、x + y = 5 を満たすyを求めよう。','y = 2','3 + y = 5 より y = 2です。'],
+ ['x = 3、y = 2 は、x + y = 5 と 2x + y = 8 の両方を満たす？','両方を満たす。','3 + 2 = 5、2 × 3 + 2 = 8です。'],
+ ['x + y = 6、2x + y = 8 を解こう。','x = 2、y = 4','下から上を引いてxを求め、代入してyを求めます。'],
+ ['x + y = 7、x − y = 1 を解こう。','x = 4、y = 3','足すと2x = 8。x = 4を代入してy = 3です。'],
+ ['鉛筆と消しゴムを合わせて5個買い、400円でした。鉛筆は1本60円、消しゴムは1個100円です。それぞれ何個？','鉛筆3本、消しゴム2個','鉛筆をx本、消しゴムをy個とすると x + y = 5、60x + 100y = 400。解くと x = 3、y = 2です。']]
+ };
+ return (bank[skill]||[]).map(([text,answer,explanation],i)=>({text,answer,explanation,stage:i<2?'基礎を確認':i<4?'条件を変えて練習':'元の学習につなげる'}));
+}
 const issueKey=(student,skill)=>`${student}:${skill}`;
 function itemFrom(q){return {id:uid(),kind:'regular',question:{...q},answer:null,correct:null,phase:'problem',entries:[],reason:'',analysisStates:{},finishedAt:null};}
 function createState(){const db={version:2,students:[{id:'kou',name:'康'},{id:'tanaka',name:'田中'},{id:'sato',name:'佐藤'}],assignments:[],issues:{},events:[],activeStudent:'kou',activeAssignment:null};createAssignment(db,{unit:'linear',count:3,due:addDays(day(),1),studentIds:db.students.map(s=>s.id)},false);return db;}
@@ -79,6 +126,6 @@ function candidateCounts(db){return SKILLS.map(s=>({...s,count:new Set(Object.va
 function studentStates(db,sid=db.activeStudent){const states=Object.fromEntries(SKILLS.map(s=>[s.id,'unknown']));for(const a of db.assignments){const w=a.works[sid];if(!w)continue;for(const i of w.items){Object.entries(i.analysisStates||{}).forEach(([key,v])=>states[key]=v);if(i.kind==='regular'&&i.correct)states[UNITS[a.unit].skill]='good';}}for(const issue of Object.values(db.issues)){if(issue.studentId===sid)states[issue.skill]=issue.status;}return states;}
 function selectAssignment(db,id,sid=db.activeStudent){const a=assignment(db,id);if(!a?.works[sid])throw Error('この生徒の宿題はありません。');db.activeAssignment=id;db.activeStudent=sid;}
 function seedDemo(){const db=createState();const a=assignment(db);for(const sid of ['kou','tanaka','sato']){db.activeStudent=sid;answerRegular(db,'99');chooseReason(db,'どこが分からないか分からない');const answers=sid==='sato'?['3x+2','9','3','左右が同じ値なので両辺に同じ操作をして等しさを保つ']:['3x+6','9','3','6を反対側に持っていけばいいから'];answers.forEach(v=>answerAnalysis(db,v));advance(db);answerRegular(db,String(currentItem(db).question.answer));advance(db);answerRegular(db,String(currentItem(db).question.answer));advance(db);submitHomework(db);}db.activeStudent='kou';db.activeAssignment=a.id;return db;}
-const API={validateAIResult,assessmentFromAI,SKILLS,LINEAR,SIMULTANEOUS,UNITS,PHASES,day,addDays,numeric,normalize,languageStatus,expressionOK,prompts,assessPrompt,reviewQuestions,createState,assignment,work,currentItem,issueKey,visibleIssue,pendingReview,eligibleReviews,assignmentPlan,createAssignment,answerRegular,chooseReason,answerAnalysis,answerReview,advance,submitHomework,markTaught,stats,candidateCounts,studentStates,selectAssignment,seedDemo};
+const API={recommendedReviews,validateAIResult,assessmentFromAI,SKILLS,LINEAR,SIMULTANEOUS,UNITS,PHASES,day,addDays,numeric,normalize,languageStatus,expressionOK,prompts,assessPrompt,reviewQuestions,createState,assignment,work,currentItem,issueKey,visibleIssue,pendingReview,eligibleReviews,assignmentPlan,createAssignment,answerRegular,chooseReason,answerAnalysis,answerReview,advance,submitHomework,markTaught,stats,candidateCounts,studentStates,selectAssignment,seedDemo};
 if(typeof module!=='undefined'&&module.exports)module.exports=API;else root.HomeworkEngine=API;
 })(typeof globalThis!=='undefined'?globalThis:this);
