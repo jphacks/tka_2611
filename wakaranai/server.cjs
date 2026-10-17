@@ -61,27 +61,40 @@ function readJSON(req){return new Promise((resolve,reject)=>{
  req.on('end',()=>{clearTimeout(timer);if(done)return;done=true;try{resolve(JSON.parse(Buffer.concat(chunks).toString('utf8')));}catch{reject(error('BAD_REQUEST',400));}});
  req.on('error',()=>{clearTimeout(timer);fail();});req.on('aborted',()=>{clearTimeout(timer);fail();});
 });}
-function createServer({apiKey=process.env.GROQ_API_KEY,fetchImpl=fetch,timeoutMs=20000}={}){
- let busy=false,requests=[];
+function createServer({apiKey=process.env.GROQ_API_KEY,fetchImpl=fetch,timeoutMs=20000,publicOrigin=process.env.PUBLIC_ORIGIN||process.env.RENDER_EXTERNAL_URL||'',maxRequests=20,maxDailyRequests=Number(process.env.AI_DAILY_LIMIT||100),maxConcurrent=2}={}){
+ let origin='';
+ if(publicOrigin){
+  const url=new URL(publicOrigin);
+  if(url.protocol!=='https:'||url.username||url.password||url.search||url.hash||url.pathname!=='/')throw Error('PUBLIC_ORIGIN must be an HTTPS origin without a path.');
+  origin=url.origin;
+ }
+ for(const limit of [maxRequests,maxDailyRequests,maxConcurrent])if(!Number.isSafeInteger(limit)||limit<1)throw Error('AI limits must be positive integers.');
+ let active=0,requests=[],dailyRequests=[];
  const server=http.createServer(async(req,res)=>{
-  const pathname=new URL(req.url,'http://localhost').pathname;
+  res.setHeader('Referrer-Policy','no-referrer');
+  res.setHeader('X-Frame-Options','DENY');
+  let pathname;
+  try{pathname=new URL(req.url,'http://localhost').pathname;}catch{json(res,400,{ok:false,error:{code:'BAD_REQUEST',message:messages.BAD_REQUEST}});return;}
+  if(pathname==='/healthz'&&req.method==='GET'){json(res,200,{ok:true});return;}
   if(pathname==='/api/status'&&req.method==='GET'){json(res,200,{version:'groq-connection-v3',keyConfigured:!!apiKey?.trim()});return;}
   if(pathname==='/api/analyze'){
    if(req.method!=='POST'){json(res,405,{ok:false,error:{code:'METHOD_NOT_ALLOWED',message:'POSTで送信してください。'}});return;}
    const hosts=[`127.0.0.1:${req.socket.localPort}`,`localhost:${req.socket.localPort}`];
-   if(!hosts.includes(req.headers.host)||req.headers.origin!==`http://${req.headers.host}`){json(res,403,{ok:false,error:{code:'FORBIDDEN',message:'同じローカル画面から送信してください。'}});return;}
+   const allowed=origin?req.headers.origin===origin&&req.headers.host===new URL(origin).host:hosts.includes(req.headers.host)&&req.headers.origin===`http://${req.headers.host}`;
+   if(!allowed){json(res,403,{ok:false,error:{code:'FORBIDDEN',message:'作品を開いた画面から送信してください。'}});return;}
    if(!/^application\/json(?:\s*;|$)/i.test(req.headers['content-type']||'')){json(res,415,{ok:false,error:{code:'BAD_REQUEST',message:messages.BAD_REQUEST}});return;}
    let ownsSlot=false;
    try{
     const body=await readJSON(req),context=resolvePrompt(body);
     if(!apiKey)throw error('AI_NOT_CONFIGURED',503);
     requests=requests.filter(t=>Date.now()-t<60000);
-    if(busy||requests.length>=20)throw error('AI_LIMIT',429);
-    busy=true;ownsSlot=true;requests.push(Date.now());
+    dailyRequests=dailyRequests.filter(t=>Date.now()-t<86400000);
+    if(active>=maxConcurrent||requests.length>=maxRequests||dailyRequests.length>=maxDailyRequests)throw error('AI_LIMIT',429);
+    active++;ownsSlot=true;requests.push(Date.now());dailyRequests.push(Date.now());
     const assessment=await analyze(context,{apiKey,fetchImpl,timeoutMs});
     json(res,200,{ok:true,requestId:body.requestId,assessment});
    }catch(err){const code=Object.hasOwn(messages,err.code)?err.code:'AI_UNAVAILABLE';json(res,err.status||502,{ok:false,error:{code,message:messages[code]}});}
-   finally{if(ownsSlot)busy=false;}
+   finally{if(ownsSlot)active--;}
    return;
   }
   const files={'/':'index.html','/index.html':'index.html','/style.css':'style.css','/app.js':'app.js','/engine.js':'engine.js'};
@@ -93,5 +106,10 @@ function createServer({apiKey=process.env.GROQ_API_KEY,fetchImpl=fetch,timeoutMs
  server.requestTimeout=10000;
  return server;
 }
-if(require.main===module){const port=Number(process.env.PORT||4173);createServer().listen(port,'127.0.0.1',()=>console.log(`WakaranAI: http://127.0.0.1:${port}\nGroq API: ${process.env.GROQ_API_KEY?'設定済み':'未設定（GROQ_API_KEYを設定してください）'}`));}
+if(require.main===module){
+ const port=Number(process.env.PORT||4173),publicOrigin=process.env.PUBLIC_ORIGIN||process.env.RENDER_EXTERNAL_URL||'';
+ const host=publicOrigin?'0.0.0.0':'127.0.0.1';
+ if(process.env.NODE_ENV==='production'&&!publicOrigin)throw Error('公開時はPUBLIC_ORIGINにHTTPSの公開URLを設定してください。Renderでは自動設定されます。');
+ createServer().listen(port,host,()=>console.log(`WakaranAI: ${publicOrigin||`http://127.0.0.1:${port}`}\nGroq API: ${process.env.GROQ_API_KEY?'設定済み':'未設定（GROQ_API_KEYを設定してください）'}`));
+}
 module.exports={createServer,resolvePrompt,analyze};
