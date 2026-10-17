@@ -62,7 +62,7 @@ async function testAI(){
  E.answerAnalysis(state,reason,assessment);eq(E.currentItem(state).entries[3].source,'ai');eq(E.currentItem(state).entries.length,4);rejects(()=>E.answerAnalysis(state,reason,assessment));
  state=E.seedDemo();E.markTaught(state,'kou:equality');E.createAssignment(state,opts(state));finishRegular(state);E.answerReview(state,'5');E.advance(state);E.answerReview(state,reason,'',false,assessment);eq(E.currentItem(state).entries[0].source,'ai');E.advance(state);E.submitHomework(state);eq(state.issues['kou:equality'].status,'mastered');
  for(const key of ['', 'fake-test-key']){
-  const server=createServer({apiKey:key,fetchImpl:provider});await new Promise(r=>server.listen(0,'127.0.0.1',r));
+  const server=createServer({apiKey:key,fetchImpl:provider,publicOrigin:'',maxDailyRequests:100});await new Promise(r=>server.listen(0,'127.0.0.1',r));
   const base='http://127.0.0.1:'+server.address().port;
   const send=(data,origin=base)=>fetch(base+'/api/analyze',{method:'POST',headers:{'Content-Type':'application/json',Origin:origin},body:JSON.stringify(data)});
   try{
