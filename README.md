@@ -364,8 +364,6 @@ Renderが提供する公開URLの環境変数をサーバーが利用します�
 外部資料の確認日：2026年10月19日。
 
 - [wakaranAIのソースコード](https://github.com/jphacks/tka_2611)
-- [すらら：学習管理機能](https://surala.jp/school/service/surala/control/)
-- [キュビナ：サービス紹介](https://qubena.com/service/qubena)
 - [Groq：openai/gpt-oss-120bのモデル情報](https://console.groq.com/docs/model/openai/gpt-oss-120b)
 - [Render：無料サービスの仕様と制限](https://render.com/docs/free)
 ````
